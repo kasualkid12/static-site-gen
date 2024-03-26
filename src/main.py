@@ -1,4 +1,4 @@
-from textnode import TextNode
+from textnode import (TextNode, text_type_text)
 from htmlnode import (HTMLNode, LeafNode, ParentNode)
 
 textnode1 = TextNode('This is a text node', 'bold', 'https://www.boot.dev')
@@ -26,3 +26,9 @@ node2 = ParentNode(
 )
 
 print(ParentNode.to_html(node2))
+
+node3 = TextNode("This is text with a `code block` word", text_type_text)
+
+text = "This is text with a `code block` word"
+print('\n test split:')
+print(text.split('`'))
