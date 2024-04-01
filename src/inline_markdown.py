@@ -13,24 +13,22 @@ from textnode import (
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
   new_nodes = []
 
-  for node in old_nodes:
-    if not isinstance(node, TextNode):
-      new_nodes.append(node)
-    else:
-      split_text = node.text.split(delimiter)
-      if len(split_text) % 2 == 0:
-        raise Exception("Invalid Markdown: no starting/ending text type")
-      counter = 0
-      for i in split_text:
-        if i == "":
+  for old_node in old_nodes:
+      if old_node.text_type != text_type_text:
+          new_nodes.append(old_node)
           continue
-        if counter % 2 == 0:
-          new_nodes.append(TextNode(i, text_type_text))
-          counter += 1
-        else:
-          new_nodes.append(TextNode(i, text_type))
-          counter += 1
-
+      split_nodes = []
+      sections = old_node.text.split(delimiter)
+      if len(sections) % 2 == 0:
+          raise ValueError("Invalid markdown, formatted section not closed")
+      for i in range(len(sections)):
+          if sections[i] == "":
+            continue
+          if i % 2 == 0:
+            split_nodes.append(TextNode(sections[i], text_type_text))
+          else:
+            split_nodes.append(TextNode(sections[i], text_type))
+      new_nodes.extend(split_nodes)
   return new_nodes
 
 def extract_markdown_images(text):
@@ -91,10 +89,10 @@ def split_nodes_link(old_nodes):
         new_nodes.append(TextNode(i[0], text_type_link, i[1]))
   return new_nodes
   
-
-node = [TextNode(
-  "This is text with a [link](https://boot.dev) and [another link](https://blog.boot.dev) with text that follows",
-  text_type_text,
-)]
-
-print(split_nodes_link(node))
+def text_to_textnodes(text):
+  nodes = [TextNode(text, text_type_text)]
+  nodes = split_nodes_delimiter(nodes, "**", text_type_bold)
+  nodes = split_nodes_delimiter(nodes, "*", text_type_italic)
+  nodes = split_nodes_delimiter(nodes, "`", text_type_code)
+  nodes = split_nodes_image(nodes)
+  return split_nodes_link(nodes)
